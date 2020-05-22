@@ -10,7 +10,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class TestPlugin extends JavaPlugin implements Listener {
@@ -56,6 +57,38 @@ public final class TestPlugin extends JavaPlugin implements Listener {
             target.setFireTicks(1000);
             return true;
         }
+        if (cmd.getName().equalsIgnoreCase("water")) {
+            // Make sure that the player specified exactly one argument (the name of the player to ignite).
+            if (args.length != 1) {
+                // When onCommand() returns false, the help message associated with that command is displayed.
+                return false;
+            }
+
+            // Make sure the sender is a player.
+            if (!(sender instanceof Player)) {
+                sender.sendMessage("Only players can set other players on fire.");
+                sender.sendMessage("This is an arbitrary requirement for demonstration purposes only.");
+                return true;
+            }
+
+            // Get the player who should be set on fire. Remember that indecies start with 0, not 1.
+            Player target = Bukkit.getServer().getPlayer(args[0]);
+
+            // Make sure the player is online.
+            if (target == null) {
+                sender.sendMessage(args[0] + " is not currently online.");
+                return true;
+            }
+            ItemStack pots = new ItemStack(Material.POTION, 64);
+            ItemMeta updog = pots.getItemMeta();
+            updog.setDisplayName("UpDog");
+            pots.setItemMeta(updog);
+            target.getInventory().addItem(pots);
+            updog.setDisplayName("Downdog");
+            pots.setItemMeta(updog);
+            target.getInventory().addItem(pots);
+            // Sets the player on fire for 1,000 ticks (there are ~20 ticks in second, so 50 seconds total).
+        }
         return false;
     }
 
@@ -66,63 +99,66 @@ public final class TestPlugin extends JavaPlugin implements Listener {
     	
     	if(event.isCancelled()) return;
     	Player player = event.getPlayer();
-    	if(event.getItem().getType() == Material.APPLE)
-    	{	
-    		Location loc = event.getPlayer().getLocation();
-    		loc.setY(loc.getY() - 1);
-    		Block b = loc.getBlock();
-    		while(b.getType()!=Material.AIR)
-    				{		
-    					loc.setY(loc.getY() - 1);
-    					b = loc.getBlock();
-    					 if(b.getType()==Material.BEDROCK)
-    					 {
-    						 player.sendMessage("only bedrock");
-    						 return;
-    					 }
-    				}
-    		player.sendMessage("there is a vein");
-    		while(b.getType()==Material.AIR)
-			{		
-				loc.setY(loc.getY() - 1);
-				b = loc.getBlock();
-				 if(b.getType()!=Material.AIR)
-				 {
-					 loc.setY(loc.getY() + 1);
-					 player.teleport(loc);
-					 return;
-				 }
-			}
-    		
+    	if (event.getItem().getItemMeta().hasDisplayName()) {
+    		String display = event.getItem().getItemMeta().getDisplayName();
+		    	if(display.equalsIgnoreCase("DownDog"))
+		    	{	
+		    		Location loc = event.getPlayer().getLocation();
+		    		loc.setY(loc.getY() - 1);
+		    		Block b = loc.getBlock();
+		    		while(b.getType()!=Material.AIR)
+		    				{		
+		    					loc.setY(loc.getY() - 1);
+		    					b = loc.getBlock();
+		    					 if(b.getType()==Material.BEDROCK)
+		    					 {
+		    						 player.sendMessage("only bedrock");
+		    						 return;
+		    					 }
+		    				}
+		    		player.sendMessage("there is a vein");
+		    		while(b.getType()==Material.AIR)
+					{		
+						loc.setY(loc.getY() - 1);
+						b = loc.getBlock();
+						 if(b.getType()!=Material.AIR)
+						 {
+							 loc.setY(loc.getY() + 1);
+							 player.teleport(loc);
+							 return;
+						 }
+					}
+		    		
+		    	}
+		    	if(display.equalsIgnoreCase("UpDog"))
+		    	{	
+		    		Location loc = event.getPlayer().getLocation();
+		    		loc.setY(loc.getY());
+		    		Block b = loc.getBlock();
+		    		int count = 0;
+		    		while(b.getType()==Material.AIR && count<200)
+		    				{		
+		    					loc.setY(loc.getY() + 1);
+		    					b = loc.getBlock();
+		    					count++;
+		    					if(count == 199)
+		    					{return;}
+		    				}
+		    		count = 0;
+		    		while(b.getType()!=Material.AIR && count<200)
+					{		
+						loc.setY(loc.getY()+1);
+						b = loc.getBlock();
+						count++;
+						if(count == 199)
+						{return;}
+					}
+		    		player.sendMessage("going up");
+		    		player.teleport(loc);
+		    		
+		    	}
     	}
-    	if(event.getItem().getType() == Material.BREAD)
-    	{	
-    		Location loc = event.getPlayer().getLocation();
-    		loc.setY(loc.getY());
-    		Block b = loc.getBlock();
-    		int count = 0;
-    		while(b.getType()==Material.AIR && count<200)
-    				{		
-    					loc.setY(loc.getY() + 1);
-    					b = loc.getBlock();
-    					count++;
-    					if(count == 199)
-    					{return;}
-    				}
-    		count = 0;
-    		while(b.getType()!=Material.AIR && count<200)
-			{		
-				loc.setY(loc.getY()+1);
-				b = loc.getBlock();
-				count++;
-				if(count == 199)
-				{return;}
-			}
-    		player.sendMessage("going up");
-    		player.teleport(loc);
-    		
-    	}
-    	
+		    	
     }
      
 	
